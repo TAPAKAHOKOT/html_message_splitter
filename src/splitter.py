@@ -18,7 +18,7 @@ def split_message(source: str, max_len: int) -> Generator[str, None, None]:
         str: Fragments of the message that are within the maximum length.
 
     Raises:
-        FragmentTooLongError: If it is impossible to split content 
+        FragmentTooLongError: If it is impossible to split content
         with the allowed maximum length.
     """
     soup = BeautifulSoup(source, "html.parser")
@@ -62,11 +62,16 @@ def split_message_recursive(
     Args:
         contents (list): The list of parsed HTML elements to split.
         fragment_max_len (int): The maximum allowed length for each fragment.
-        fragmentizable_tags (list[str]): Tags that can be split further (e.g., "p", "div").
-        fragment (str): The current fragment being built (default is an empty string).
-        fragment_len (int): The current length of the fragment being built (default is 0).
-        tag_to_open (str): The opening tag to include in the fragment (default is an empty string).
-        tags_to_close (str): The closing tags to include at the end of the fragment (default is an empty string).
+        fragmentizable_tags (list[str]): Tags that can be split
+            further (e.g., "p", "div").
+        fragment (str): The current fragment being
+            built (default is an empty string).
+        fragment_len (int): The current length of the fragment being
+            built (default is 0).
+        tag_to_open (str): The opening tag to include in the
+            fragment (default is an empty string).
+        tags_to_close (str): The closing tags to include at
+            the end of the fragment (default is an empty string).
 
     Yields:
         str: Fragments of the message that are within the maximum length.

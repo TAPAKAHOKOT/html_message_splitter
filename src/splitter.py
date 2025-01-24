@@ -96,7 +96,7 @@ def split_message_recursive(
                 available_len = fragment_max_len - fragment_len
 
                 if available_len <= len(content_str):
-                    yield content_str[:available_len]
+                    yield fragment + content_str[:available_len]
                     content_str = content_str[available_len:]
 
                     fragment = ""

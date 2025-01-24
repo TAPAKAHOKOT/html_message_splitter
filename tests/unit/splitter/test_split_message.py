@@ -63,6 +63,19 @@ class TestSplitMessage(unittest.TestCase):
                     660,
                 ],
             ),
+            TestFileCasesTestCases(
+                filename="test-4.html",
+                max_len=40,
+                result_fragments_len=[
+                    40,
+                    40,
+                    40,
+                    40,
+                    40,
+                    40,
+                    33
+                ],
+            ),
         ]
 
         for test_case in test_cases:

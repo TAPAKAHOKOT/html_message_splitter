@@ -29,7 +29,7 @@ class TestSplitMessage(unittest.TestCase):
         result = list(split_message("<p>Hello, world!</p>", max_len=50))
         self.assertEqual(result, ["<p>Hello, world!</p>"])
 
-        result = list(split_message("<p>Hello, world!</p>" * 3, max_len=30))
+        result = list(split_message("<p>Hello, world!</p>" * 3, max_len=20))
         self.assertEqual(result, ["<p>Hello, world!</p>"] * 3)
 
     def test_too_long_fragment(self):
@@ -42,7 +42,7 @@ class TestSplitMessage(unittest.TestCase):
                 filename="test-1.html",
                 max_len=4396,
                 result_fragments_len=[
-                    4353,
+                    4370,
                     1370,
                 ],
             ),
@@ -50,7 +50,7 @@ class TestSplitMessage(unittest.TestCase):
                 filename="test-1.html",
                 max_len=4296,
                 result_fragments_len=[
-                    4231,
+                    4248,
                     1492,
                 ],
             ),

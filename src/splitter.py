@@ -51,10 +51,8 @@ def split_message_recursive(
     contents: list,
     fragment_max_len: int,
     fragmentizable_tags: list[str],
-    fragment: str = "",
+    min_fragment_len: int = 0,
     fragment_len: int = 0,
-    tag_to_open: str = "",
-    tags_to_close: str = "",
 ) -> Generator[str, None, None]:
     """
     Recursively splits an HTML message into smaller fragments based on tags.
@@ -64,67 +62,98 @@ def split_message_recursive(
         fragment_max_len (int): The maximum allowed length for each fragment.
         fragmentizable_tags (list[str]): Tags that can be split
             further (e.g., "p", "div").
-        fragment (str): The current fragment being
-            built (default is an empty string).
+        min_fragment_len (int): The minimal possible length of the
+            fragment being built (default is 0).
         fragment_len (int): The current length of the fragment being
             built (default is 0).
-        tag_to_open (str): The opening tag to include in the
-            fragment (default is an empty string).
-        tags_to_close (str): The closing tags to include at
-            the end of the fragment (default is an empty string).
 
     Yields:
         str: Fragments of the message that are within the maximum length.
     """
-    tags_to_close_len = len(tags_to_close)
+    if min_fragment_len >= fragment_max_len:
+        raise FragmentTooLongError(min_fragment_len + 1, fragment_max_len)
 
-    content_index = 0
-    while content_index < len(contents):
-        content = contents[content_index]
+    fragment = ""
+    for content in contents:
         content_len = len(str(content))
 
-        if fragment_len + content_len + tags_to_close_len > fragment_max_len:
-            if (
-                not hasattr(content, "contents")
-                or content.name not in fragmentizable_tags
-            ):
+        if fragment_len + content_len == fragment_max_len:
+            yield fragment + str(content)
+
+            fragment = ""
+            fragment_len = min_fragment_len
+            continue
+
+        elif fragment_len + content_len < fragment_max_len:
+            fragment += str(content)
+            fragment_len += len(str(content))
+            continue
+
+        if not hasattr(content, "contents"):
+            # TEXT
+            content_str = str(content)
+            while content_str:
+                available_len = fragment_max_len - fragment_len
+
+                if available_len <= len(content_str):
+                    yield content_str[:available_len]
+                    content_str = content_str[available_len:]
+
+                    fragment = ""
+                    fragment_len = min_fragment_len
+                else:
+                    fragment = content_str
+                    fragment_len = min_fragment_len + len(fragment)
+                    break
+
+        elif content.name not in fragmentizable_tags:
+            # UNSPLITTABLE TAG
+            yield fragment
+
+            fragment = str(content)
+            fragment_len = min_fragment_len + len(fragment)
+
+        else:
+            # SPLITTABLE TAG
+            has_tag = content.name is not None
+            tag_to_open = (
+                str(content).split(str(content.contents[0]))[0]
+                if has_tag
+                else ""
+            )
+            tag_to_close = f"</{content.name}>" if has_tag else ""
+
+            tags_len = len(tag_to_open) + len(tag_to_close)
+
+            if fragment_len + tags_len >= fragment_max_len:
                 yield fragment
 
-                fragment = str(content)
-                fragment_len = content_len
+                fragment = ""
+                fragment_len = min_fragment_len
 
-                content_index += 1
-                continue
-
-            subtag_to_open = str(content).split(str(content.contents[0]))[0]
             subfragments = list(
                 split_message_recursive(
                     content.contents,
                     fragment_max_len,
                     fragmentizable_tags,
-                    fragment,
-                    fragment_len,
-                    subtag_to_open,
-                    f"</{content.name}>",
+                    min_fragment_len + tags_len,
+                    fragment_len + tags_len,
                 )
             )
 
-            if len(subfragments) == 1:
-                yield fragment + tags_to_close
-                fragment = str(content)
-                fragment_len = len(fragment)
-            elif len(subfragments) >= 2:
-                yield subfragments[0] + tags_to_close
+            if len(subfragments) > 0:
+                yield fragment + (
+                    f"{tag_to_open}{subfragments[0]}{tag_to_close}"
+                )
 
+                fragment = ""
+                fragment_len = min_fragment_len
+
+            if len(subfragments) > 2:
                 for subfragment in subfragments[1:-1]:
-                    yield subfragment
+                    yield f"{tag_to_open}{subfragment}{tag_to_close}"
 
-                fragment = subfragments[-1]
-                fragment_len = len(str(fragment))
-        else:
-            fragment += str(content)
-            fragment_len += content_len
+            fragment = f"{tag_to_open}{subfragments[-1]}{tag_to_close}"
+            fragment_len = min_fragment_len + len(fragment)
 
-        content_index += 1
-
-    yield tag_to_open + fragment + tags_to_close
+    yield fragment

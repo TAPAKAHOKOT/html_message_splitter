@@ -4,13 +4,42 @@ version = "0.1.0"
 description = ""
 authors = ["TAPAKAHOKOT <tapakahokot@gmail.com>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
 click = "^8.1.8"
 beautifulsoup4 = "^4.12.3"
 
+[tool.poetry.group.dev.dependencies]
+black = "^24.10.0"
+isort = "^5.13.2"
+flake8 = "^7.1.1"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 80
+target-version = ["py39"]
+skip-string-normalization = false
+
+[tool.isort]
+profile = "black"
+line_length = 80
+
+[tool.flake8]
+max-line-length = 80
+extend-ignore = [
+    "E203",  # Whitespace before ':'
+    "W503"   # Line break before binary operator
+]
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "migrations",
+    "venv"
+]

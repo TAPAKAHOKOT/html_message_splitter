@@ -12,12 +12,13 @@ from src.splitter import split_message
 @click.argument("message_source")
 def main(message_source: str, max_len: int):
     """
-    Processes a message file, ensuring it exists and
-    performs operations based on the provided maximum fragment length.
+    Processes a file with message, ensuring it exists and
+    performs split message operations based on the provided
+    maximum fragment length.
 
     :param max_len: Maximum length of one fragment. Default is 4096.
     :param message_filepath: Path to the message file to process.
-    :raises AttributeError: If the specified message file does not exist.
+    :raises FileNotFoundError: If the specified message file does not exist.
     """
     if not os.path.isfile(message_source):
         raise FileNotFoundError(

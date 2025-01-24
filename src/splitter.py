@@ -6,6 +6,21 @@ from src.exceptions.fragment_too_long import FragmentTooLongError
 
 
 def split_message(source: str, max_len: int) -> Generator[str, None, None]:
+    """
+    Splits an HTML message into smaller fragments without
+    exceeding the maximum length.
+
+    Args:
+        source (str): The HTML source string to be split.
+        max_len (int): The maximum allowed length for each fragment.
+
+    Yields:
+        str: Fragments of the message that are within the maximum length.
+
+    Raises:
+        FragmentTooLongError: If it is impossible to split content 
+        with the allowed maximum length.
+    """
     soup = BeautifulSoup(source, "html.parser")
 
     for fragment in split_message_recursive(
@@ -41,6 +56,21 @@ def split_message_recursive(
     tag_to_open: str = "",
     tags_to_close: str = "",
 ) -> Generator[str, None, None]:
+    """
+    Recursively splits an HTML message into smaller fragments based on tags.
+
+    Args:
+        contents (list): The list of parsed HTML elements to split.
+        fragment_max_len (int): The maximum allowed length for each fragment.
+        fragmentizable_tags (list[str]): Tags that can be split further (e.g., "p", "div").
+        fragment (str): The current fragment being built (default is an empty string).
+        fragment_len (int): The current length of the fragment being built (default is 0).
+        tag_to_open (str): The opening tag to include in the fragment (default is an empty string).
+        tags_to_close (str): The closing tags to include at the end of the fragment (default is an empty string).
+
+    Yields:
+        str: Fragments of the message that are within the maximum length.
+    """
     tags_to_close_len = len(tags_to_close)
 
     content_index = 0
